@@ -37,3 +37,6 @@ storage_config:
     cache_location: /loki/tsdb-cache
   filesystem:
     directory: /loki/chunks
+
+limits_config:
+  allow_structured_metadata: true

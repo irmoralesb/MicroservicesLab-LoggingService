@@ -5,8 +5,8 @@ receivers:
       grpc:
 
 exporters:
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
+  otlphttp:
+    endpoint: http://loki:3100/otlp
 
   otlp:
     endpoint: tempo:4317
@@ -24,7 +24,7 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [loki]
+      exporters: [otlphttp]
 
     traces:
       receivers: [otlp]

@@ -8,17 +8,19 @@ volumes:
   grafana_data:
   loki_data:
   tempo_data:
+  prometheus_data:
 
 services:
 
   # -----------------------------
-  # Prometheus (Metrics Backend)
+  # Prometheus (Metrics Storage)
   # -----------------------------
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     ports:
@@ -38,6 +40,7 @@ services:
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Collector metrics (scraped by Prometheus)
     networks:
       - observability
 
@@ -62,45 +65,28 @@ services:
   tempo:
     image: grafana/tempo:latest
     container_name: tempo
-    command: ["-config.file=/etc/tempo/tempo-config.yml"]
+    command: -config.file=/etc/tempo/tempo.yml
     volumes:
-      - ./tempo-config.yml:/etc/tempo/tempo-config.yml
+      - ./tempo.yml:/etc/tempo/tempo.yml
       - tempo_data:/var/tempo
     ports:
-      - "3200:3200"   # Tempo HTTP
+      - "3200:3200"
     networks:
       - observability
 
   # -----------------------------
-  # Grafana (UI)
+  # Grafana (Visualization)
   # -----------------------------
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
 
-    # Environment-variable based configuration (no manual UI setup needed)
     environment:
-      # ---- Admin & Security ----
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-
-      # ---- Server ----
-      - GF_SERVER_HTTP_PORT=3000
-
-      # ---- Anonymous Access (optional for local lab) ----
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-
-      # ---- Disable login form if using only anonymous ----
-      - GF_AUTH_DISABLE_LOGIN_FORM=false
-
-      # ---- Feature toggles (optional) ----
-      - GF_FEATURE_TOGGLES_ENABLE=tempoSearch tempoBackendSearch
-
-    # CLI-style overrides are also supported via command
-    command:
-      - --config=/etc/grafana/grafana.ini
 
     volumes:
       - grafana_data:/var/lib/grafana
@@ -111,32 +97,7 @@ services:
     depends_on:
       - loki
       - tempo
+      - prometheus
 
-    networks:
-      - observability
-
-  # -----------------------------
-  # Example .NET Microservice
-  # -----------------------------
-  dotnet-service:
-    image: mcr.microsoft.com/dotnet/aspnet:8.0
-    container_name: dotnet-service
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-    depends_on:
-      - otel-collector
-    networks:
-      - observability
-
-  # -----------------------------
-  # Example Python Microservice
-  # -----------------------------
-  python-service:
-    image: python:3.12-slim
-    container_name: python-service
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-    depends_on:
-      - otel-collector
     networks:
       - observability

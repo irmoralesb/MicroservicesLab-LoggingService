@@ -14,7 +14,7 @@ exporters:
       insecure: true
 
   prometheus:
-    endpoint: ":8888"
+    endpoint: ":8889"
 
 processors:
   batch:

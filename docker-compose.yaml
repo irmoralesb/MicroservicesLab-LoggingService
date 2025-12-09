@@ -24,7 +24,7 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
+      - "9090:9090"   # Prometheus web UI
     networks:
       - observability
 
@@ -38,9 +38,10 @@ services:
     volumes:
       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-      - "8888:8888"   # Collector metrics (scraped by Prometheus)
+      - "4317:4317"   # OTLP gRPC (external services send telemetry here)
+      - "4318:4318"   # OTLP HTTP (external services send telemetry here)
+      - "8888:8888"   # Collector internal metrics (optional: for debugging)
+      # Port 8889 not exposed - Prometheus accesses it via Docker network (otel-collector:8889)
     networks:
       - observability
 

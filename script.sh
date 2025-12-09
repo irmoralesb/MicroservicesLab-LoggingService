@@ -1,3 +1,1 @@
-GF_SECURITY_ADMIN_USER=<user> \
-GF_SECURITY_ADMIN_PASSWORD=<password> \
 docker compose -f <file.yaml> up -d

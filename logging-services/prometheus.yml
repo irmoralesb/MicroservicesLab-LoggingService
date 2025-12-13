@@ -5,13 +5,13 @@ scrape_configs:
   # OTEL Collector internal metrics
   - job_name: 'otel-collector-internal'
     static_configs:
-      - targets: ['otel-collector:8888']
+      - targets: ['localhost:8888']
     metrics_path: '/metrics'
 
   # OTEL Collector OTLP metrics (via Prometheus exporter)
   - job_name: 'otel-collector-otlp'
     static_configs:
-      - targets: ['otel-collector:8889']
+      - targets: ['localhost:8889']
     metrics_path: '/metrics'
 
   # Loki metrics
@@ -35,5 +35,4 @@ scrape_configs:
   # Node Exporter for Ubuntu server
   - job_name: "node_exporter"
     static_configs:
-      - targets:
-          - "localhost:9100"
+      - targets: ['192.168.1.250:9100']
